@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { NoticeType, TargetType } from "@/constants/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Paperclip, Upload, X } from "lucide-react";
 import { useState } from "react";
@@ -14,16 +15,6 @@ export const Route = createFileRoute("/notice-board/create")({
 
 function RouteComponent() {
     const [uploadedFiles, setUploadedFiles] = useState(["Policy_Document.pdf"]);
-
-    const noticeTypes = [
-        "Warning / Disciplinary",
-        "Performance Improvement",
-        "Appreciation / Recognition",
-        "Attendance / Leave Issue",
-        "Payroll / Compensation",
-        "Contract / Role Update",
-        "Advisory / Personal Reminder",
-    ];
 
     const removeFile = (fileName: string) => {
         setUploadedFiles(uploadedFiles.filter((f) => f !== fileName));
@@ -57,9 +48,11 @@ function RouteComponent() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="individual">Individual</SelectItem>
-                                    <SelectItem value="department">Department</SelectItem>
-                                    <SelectItem value="all">All Departments</SelectItem>
+                                    {Object.entries(TargetType).map(([key, value]) => (
+                                        <SelectItem key={key} value={key}>
+                                            {value}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -124,9 +117,9 @@ function RouteComponent() {
                                     <SelectValue placeholder="Select Notice Type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {noticeTypes.map((type) => (
-                                        <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, "-")}>
-                                            {type}
+                                    {Object.entries(NoticeType).map(([key, value]) => (
+                                        <SelectItem key={key} value={key}>
+                                            {value}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
