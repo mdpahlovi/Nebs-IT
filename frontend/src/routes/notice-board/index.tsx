@@ -151,7 +151,7 @@ function RouteComponent() {
                     <span>Published on</span>
                     <Calendar className="w-4 h-4" />
                 </button>
-                <Button variant="secondary_outline">Reset Filters</Button>
+                <Button variant="secondary">Reset Filters</Button>
             </div>
             {/* Table */}
             <Table>
