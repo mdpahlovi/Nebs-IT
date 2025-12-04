@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 
 export function AppHeader() {
     return (
@@ -10,7 +9,7 @@ export function AppHeader() {
                 13 June, 2026
             </p>
             <div className="flex items-center gap-4">
-                <Separator orientation="vertical" />
+                <div className="bg-border w-px h-5" />
                 <div className="flex items-center gap-3">
                     <p className="text-foreground text-right">
                         <span className="font-medium">Asif Riaj</span>
