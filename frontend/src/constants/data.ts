@@ -9,6 +9,17 @@ export const TargetType = {
     all: "All Department",
 };
 
+export const TargetTypeColor = {
+    individual: "text-cyan-600",
+    finance: "text-emerald-600",
+    "sales-team": "text-orange-600",
+    "web-team": "text-blue-600",
+    "database-team": "text-gray-600",
+    admin: "text-purple-600",
+    hr: "text-red-600",
+    all: "text-blue-600",
+};
+
 export const NoticeType = {
     "warning-disciplinary": "Warning / Disciplinary",
     "performance-improvement": "Performance Improvement",

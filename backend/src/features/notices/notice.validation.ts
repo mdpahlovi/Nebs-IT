@@ -27,7 +27,7 @@ export const createNoticeSchema = z.object({
             noticeType: z.enum(noticeTypes, "Notice type is required"),
             publishDate: z.string().min(1, "Publish date is required"),
             attachments: z.array(attachmentSchema).max(2, "Maximum 2 attachments allowed"),
-            status: z.enum(["draft", "published"]),
+            status: z.enum(["draft", "published", "unpublished"]),
         })
         .transform(({ targetEmployee, ...rest }) => ({
             ...rest,
@@ -47,7 +47,8 @@ export const getNoticesQuerySchema = z.object({
         limit: z.string().transform(Number).optional(),
         search: z.string().optional(),
         targetType: z.enum(targetTypes).optional(),
-        status: z.enum(["draft", "published"]).optional(),
+        employeeId: z.string().optional(),
+        status: z.enum(["draft", "published", "unpublished"]).optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
     }),

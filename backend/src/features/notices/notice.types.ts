@@ -13,7 +13,7 @@ export type NoticeType =
     | "contract-role-update"
     | "advisory-personal-reminder";
 
-export type NoticeStatus = "draft" | "published";
+export type NoticeStatus = "draft" | "published" | "unpublished";
 
 export interface IAttachment {
     fileName: string;

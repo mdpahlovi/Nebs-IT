@@ -28,7 +28,7 @@ const noticeSchema = z.object({
     noticeType: z.enum(Object.keys(NoticeType), "Notice type is required"),
     publishDate: z.string().min(1, "Publish date is required"),
     attachments: z.array(attachmentSchema).max(2, "Maximum 2 attachments allowed"),
-    status: z.enum(["draft", "published"]),
+    status: z.enum(["draft", "published", "unpublished"]),
 });
 
 export type CreateNotice = z.infer<typeof noticeSchema>;
@@ -72,7 +72,7 @@ function RouteComponent() {
 
     return (
         <>
-            <div className="bg-muted flex-1 flex flex-col gap-6 p-6">
+            <div className="flex-1 flex flex-col gap-6 p-6">
                 <div className="flex items-center gap-4">
                     <Button variant="accent" size="icon-sm" asChild>
                         <Link to="/notice-board">

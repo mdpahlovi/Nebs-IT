@@ -1,7 +1,7 @@
 import { PaginatedResult } from "@/types/index";
 import { ApiError } from "@/utils/ApiError";
 import { Notice } from "./notice.model";
-import { CreateNoticeDto, INotice, NoticeQueryParams, NoticeStatus } from "./notice.types";
+import { CreateNoticeDto, INotice, NoticeQueryParams } from "./notice.types";
 
 export class NoticeService {
     /**
@@ -18,7 +18,7 @@ export class NoticeService {
      * Get all notices with filtering and pagination
      */
     async findAll(query: NoticeQueryParams): Promise<PaginatedResult<INotice>> {
-        const { page = 1, limit = 10, search, targetType, status, startDate, endDate } = query;
+        const { page = 1, limit = 6, search, targetType, employeeId, status, startDate, endDate } = query;
 
         // Build filter
         const filter: Record<string, unknown> = {};
@@ -29,6 +29,10 @@ export class NoticeService {
 
         if (targetType) {
             filter.targetType = targetType;
+        }
+
+        if (employeeId) {
+            filter.targetEmployees = { $in: [employeeId] };
         }
 
         if (status) {
@@ -86,11 +90,11 @@ export class NoticeService {
         const updateData: Record<string, unknown> = {};
 
         switch (notice.status) {
-            case "draft":
+            case "unpublished":
                 updateData.status = "published";
                 break;
             case "published":
-                updateData.status = "draft";
+                updateData.status = "unpublished";
                 break;
         }
 
@@ -100,7 +104,7 @@ export class NoticeService {
         }
 
         // Clear publishedAt when unpublish
-        if (updateData.status === "draft") {
+        if (updateData.status === "unpublished") {
             updateData.publishedAt = null;
         }
 

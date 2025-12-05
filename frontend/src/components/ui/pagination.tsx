@@ -72,4 +72,73 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
     );
 }
 
-export { Pagination, PaginationContent, PaginationLink, PaginationItem, PaginationPrevious, PaginationNext, PaginationEllipsis };
+type PaginationCompProps = {
+    page: number;
+    total?: number;
+    limit?: number;
+    onChange?: (page: number) => void;
+};
+
+function PaginationComp({ page = 1, total = 0, limit = 6, onChange }: PaginationCompProps) {
+    const totalPages = Math.ceil(total / limit);
+
+    if (totalPages <= 0) return null;
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages && newPage !== page) {
+            onChange?.(newPage);
+        }
+    };
+
+    return (
+        <Pagination>
+            <PaginationContent>
+                <PaginationItem>
+                    <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page - 1);
+                        }}
+                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                    <PaginationItem key={num}>
+                        <PaginationLink
+                            href="#"
+                            isActive={num === page}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handlePageChange(num);
+                            }}
+                        >
+                            {num}
+                        </PaginationLink>
+                    </PaginationItem>
+                ))}
+                <PaginationItem>
+                    <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page + 1);
+                        }}
+                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                </PaginationItem>
+            </PaginationContent>
+        </Pagination>
+    );
+}
+
+export {
+    Pagination,
+    PaginationContent,
+    PaginationLink,
+    PaginationItem,
+    PaginationPrevious,
+    PaginationNext,
+    PaginationEllipsis,
+    PaginationComp,
+};

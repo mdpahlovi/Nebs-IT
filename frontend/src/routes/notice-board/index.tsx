@@ -1,101 +1,79 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { PaginationComp } from "@/components/ui/pagination";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Employee, NoticeType, TargetType, TargetTypeColor } from "@/constants/data";
+import { fetchNotices } from "@/lib/apis";
+import { capitalize } from "@/lib/utils";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, Eye, FilePenLine, MoreVertical, Pencil, Plus } from "lucide-react";
+import { ChevronDownIcon, Eye, FilePenLine, MoreVertical, Pencil, Plus } from "lucide-react";
+import { useCallback, useState } from "react";
+import { type DateRange } from "react-day-picker";
 
 export const Route = createFileRoute("/notice-board/")({
     component: RouteComponent,
 });
 
+type NoticeFilters = {
+    targetType: string;
+    employeeId: string;
+    status: string;
+    dateRange: DateRange | undefined;
+};
+
+const initialFilters: NoticeFilters = {
+    targetType: "",
+    employeeId: "",
+    status: "",
+    dateRange: undefined,
+};
+
 function RouteComponent() {
-    const notices = [
-        {
-            id: 1,
-            title: "Office closed on Friday for maintenance.",
-            noticeType: "General / Company-W",
-            department: "All Department",
-            publishedOn: "15-Jun-2025",
-            status: "Published",
-            departmentColor: "text-blue-600",
+    const [page, setPage] = useState(1);
+    const [open, setOpen] = useState(false);
+    const [filters, setFilters] = useState<NoticeFilters>(initialFilters);
+
+    const { data } = useQuery({
+        queryKey: ["notices", page, filters.targetType, filters.employeeId, filters.status, filters.dateRange?.from, filters.dateRange?.to],
+        queryFn: () =>
+            fetchNotices({
+                page,
+                targetType: filters.targetType || undefined,
+                employeeId: filters.employeeId || undefined,
+                status: filters.status || undefined,
+                startDate: filters.dateRange?.from,
+                endDate: filters.dateRange?.to,
+            }),
+        placeholderData: keepPreviousData,
+    });
+
+    const updateFilter = useCallback(<K extends keyof NoticeFilters>(key: K, value: NoticeFilters[K]) => {
+        setFilters((prev) => ({ ...prev, [key]: value }));
+        setPage(1);
+    }, []);
+
+    const handleDateChange = useCallback(
+        (newDate: DateRange | undefined) => {
+            updateFilter("dateRange", newDate);
+            if (newDate?.from && newDate?.to) {
+                setOpen(false);
+            }
         },
-        {
-            id: 2,
-            title: "Eid a-Fitr holiday schedule.",
-            noticeType: "Holiday & Event",
-            department: "Finance",
-            publishedOn: "15-Jun-2025",
-            status: "Published",
-            departmentColor: "text-emerald-600",
-        },
-        {
-            id: 3,
-            title: "Updated code of conduct policy",
-            noticeType: "HR & Policy Update",
-            department: "Sales Team",
-            publishedOn: "15-Jun-2025",
-            status: "Published",
-            departmentColor: "text-orange-600",
-        },
-        {
-            id: 4,
-            title: "Payroll for October will be processed on 28th",
-            noticeType: "Finance & Payroll",
-            department: "Web Team",
-            publishedOn: "15-Jun-2025",
-            status: "Published",
-            departmentColor: "text-blue-600",
-            hasToggle: true,
-            toggleOn: true,
-        },
-        {
-            id: 5,
-            title: "System update scheduled for 30 Oct (9:00-11:00 PM)",
-            noticeType: "IT / System Maintena",
-            department: "Database Team",
-            publishedOn: "15-Jun-2025",
-            status: "Published",
-            departmentColor: "text-gray-600",
-        },
-        {
-            id: 6,
-            title: "Design team sprint review moved to Tuesday.",
-            noticeType: "Department / Team",
-            department: "Admin",
-            publishedOn: "15-Jun-2025",
-            status: "Published",
-            departmentColor: "text-purple-600",
-        },
-        {
-            id: 7,
-            title: "Unauthorized absence recorded on 18 Oct 2025",
-            noticeType: "Warning / Disciplinary",
-            department: "Individual",
-            publishedOn: "15-Jun-2025",
-            status: "Unpublished",
-            departmentColor: "text-cyan-600",
-        },
-        {
-            id: 8,
-            title: "Office closed today due to severe weather",
-            noticeType: "Emergency / Urgent",
-            department: "HR",
-            publishedOn: "15-Jun-2025",
-            status: "Draft",
-            departmentColor: "text-red-600",
-            hasToggle: true,
-            toggleOn: false,
-        },
-    ];
+        [updateFilter]
+    );
+
+    const handleResetFilters = useCallback(() => {
+        setFilters(initialFilters);
+        setPage(1);
+    }, []);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -111,8 +89,8 @@ function RouteComponent() {
     };
 
     return (
-        <div className="bg-muted flex-1 flex flex-col gap-6 p-6">
-            <div className="flex justify-between items-center">
+        <div className="flex-1 flex flex-col gap-6 p-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-6">
                 {/* Header */}
                 <div className="space-y-2">
                     <h3>Notice Management</h3>
@@ -139,92 +117,138 @@ function RouteComponent() {
             {/* Filters */}
             <div className="flex justify-end items-center gap-4 flex-wrap">
                 <h6>Filter by:</h6>
-                <select className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option>Departments or individuals</option>
-                </select>
-                <input
-                    type="text"
-                    placeholder="Employee Id or Name"
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <select className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option>Status</option>
-                </select>
-                <button className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2 hover:bg-gray-50">
-                    <span>Published on</span>
-                    <Calendar className="w-4 h-4" />
-                </button>
-                <Button variant="secondary">Reset Filters</Button>
+                <Select value={filters.targetType} onValueChange={(value) => updateFilter("targetType", value)}>
+                    <SelectTrigger className="w-max">
+                        <SelectValue placeholder="Departments or individuals" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.entries(TargetType).map(([key, value]) => (
+                            <SelectItem key={key} value={key}>
+                                {value}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={filters.employeeId} onValueChange={(value) => updateFilter("employeeId", value)}>
+                    <SelectTrigger className="w-max">
+                        <SelectValue placeholder="Employee Id or Name" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.entries(Employee).map(([key, { name, position }]) => (
+                            <SelectItem key={key} value={key}>
+                                {name} - {position}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={filters.status} onValueChange={(value) => updateFilter("status", value)}>
+                    <SelectTrigger className="w-max">
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {["draft", "published", "unpublished"].map((value) => (
+                            <SelectItem key={value} value={value}>
+                                {capitalize(value)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button variant="accent" id="date" className="w-52 justify-between font-normal">
+                            {filters.dateRange?.from && filters.dateRange?.to
+                                ? `${filters.dateRange.from.toLocaleDateString()} - ${filters.dateRange.to.toLocaleDateString()}`
+                                : "Published on"}
+                            <ChevronDownIcon />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                        <Calendar
+                            mode="range"
+                            selected={filters.dateRange}
+                            onSelect={handleDateChange}
+                            captionLayout="dropdown"
+                            numberOfMonths={2}
+                        />
+                    </PopoverContent>
+                </Popover>
+                <Button variant="secondary" onClick={handleResetFilters}>
+                    Reset Filters
+                </Button>
             </div>
             {/* Table */}
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>
-                            <Checkbox />
-                        </TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Notice Type</TableHead>
-                        <TableHead>Departments/Individual</TableHead>
-                        <TableHead>Published On</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {notices.map((notice) => (
-                        <TableRow key={notice.id}>
-                            <TableCell>
+            {data && data.data.length ? (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>
                                 <Checkbox />
-                            </TableCell>
-                            <TableCell className="text-sm text-gray-900">{notice.title}</TableCell>
-                            <TableCell className="text-sm text-gray-600">{notice.noticeType}</TableCell>
-                            <TableCell>
-                                <span className={`text-sm font-medium ${notice.departmentColor}`}>{notice.department}</span>
-                            </TableCell>
-                            <TableCell className="text-sm text-gray-600">{notice.publishedOn}</TableCell>
-                            <TableCell>
-                                <div className="flex items-center gap-2">{getStatusBadge(notice.status)}</div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <button className="p-1 hover:bg-gray-100 rounded">
-                                        <Eye className="w-4 h-4 text-gray-600" />
-                                    </button>
-                                    <button className="p-1 hover:bg-gray-100 rounded">
-                                        <Pencil className="w-4 h-4 text-gray-600" />
-                                    </button>
-                                    <button className="p-1 hover:bg-gray-100 rounded">
-                                        <MoreVertical className="w-4 h-4 text-gray-600" />
-                                    </button>
-                                </div>
-                            </TableCell>
+                            </TableHead>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Notice Type</TableHead>
+                            <TableHead>Departments/Individual</TableHead>
+                            <TableHead>Published On</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {data.data.map((notice) => (
+                            <TableRow key={notice._id}>
+                                <TableCell>
+                                    <Checkbox />
+                                </TableCell>
+                                <TableCell>{notice.title}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                    {NoticeType[notice.noticeType as keyof typeof NoticeType]}
+                                </TableCell>
+                                <TableCell className={TargetTypeColor[notice.targetType as keyof typeof TargetTypeColor]}>
+                                    {TargetType[notice.targetType as keyof typeof TargetType]}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">
+                                    {new Date(notice.publishDate).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric",
+                                    })}
+                                </TableCell>
+                                <TableCell>{getStatusBadge(capitalize(notice.status))}</TableCell>
+                                <TableCell className="flex items-center gap-1">
+                                    <button className="p-1 hover:bg-accent/5 rounded-full">
+                                        <Eye className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                    <button className="p-1 hover:bg-accent/5 rounded-full">
+                                        <Pencil className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                    {notice.status !== "draft" ? (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="p-1 hover:bg-accent/5 rounded-full">
+                                                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent
+                                                side="bottom"
+                                                align="end"
+                                                className="w-48 flex justify-between items-center p-4"
+                                            >
+                                                <Label htmlFor="status">{capitalize(notice.status)}</Label>
+                                                <Switch id="status" />
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    ) : (
+                                        <button className="p-1 hover:bg-accent/5 rounded-full">
+                                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                        </button>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            ) : null}
             {/* Pagination */}
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#" isActive>
-                            2
-                        </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">3</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <PaginationComp page={page} total={data?.meta?.total} limit={data?.meta?.limit} onChange={setPage} />
         </div>
     );
 }

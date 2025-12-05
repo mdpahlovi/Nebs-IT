@@ -65,7 +65,7 @@ const noticeSchema = new Schema<INotice>(
         attachments: [attachmentSchema],
         status: {
             type: String,
-            enum: ["draft", "published"] as NoticeStatus[],
+            enum: ["draft", "published", "unpublished"] as NoticeStatus[],
             default: "draft",
         },
         priority: {
