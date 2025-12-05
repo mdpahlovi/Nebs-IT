@@ -1,7 +1,7 @@
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler } from "@/utils/asyncHandler";
 import { Request, Response } from "express";
 import { noticeService } from "./notice.service";
-import { ApiResponse } from "../../utils/ApiResponse";
-import { asyncHandler } from "../../utils/asyncHandler";
 import { NoticeQueryParams } from "./notice.types";
 
 export class NoticeController {

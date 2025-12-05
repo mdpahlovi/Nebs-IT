@@ -3,17 +3,20 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Toaster } from "sonner";
 
 const RootLayout = () => (
-    <SidebarProvider>
-        <AppSidebar />
-        <div className="flex-1">
-            <AppHeader />
-            <Outlet />
-        </div>
-
+    <>
+        <SidebarProvider>
+            <AppSidebar />
+            <div className="flex-1">
+                <AppHeader />
+                <Outlet />
+            </div>
+        </SidebarProvider>
+        <Toaster />
         <TanStackRouterDevtools />
-    </SidebarProvider>
+    </>
 );
 
 export const Route = createRootRoute({ component: RootLayout });

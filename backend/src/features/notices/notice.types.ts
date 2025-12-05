@@ -1,4 +1,6 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
+import { z } from "zod";
+import { createNoticeSchema, getNoticesQuerySchema } from "./notice.validation";
 
 export type TargetType = "individual" | "finance" | "sales-team" | "web-team" | "database-team" | "admin" | "hr" | "all";
 
@@ -31,24 +33,6 @@ export interface INotice extends Document {
     publishedAt?: Date;
 }
 
-export interface CreateNoticeDto {
-    title: string;
-    body?: string;
-    targetType: TargetType;
-    targetEmployees: string[];
-    noticeType: NoticeType;
-    publishDate: string | Date;
-    attachments: IAttachment[];
-    status: NoticeStatus;
-    priority?: "low" | "medium" | "high" | "urgent";
-}
+export type CreateNoticeDto = z.infer<typeof createNoticeSchema>["body"];
 
-export interface NoticeQueryParams {
-    page?: number;
-    limit?: number;
-    search?: string;
-    targetType?: TargetType;
-    status?: NoticeStatus;
-    startDate?: string;
-    endDate?: string;
-}
+export type NoticeQueryParams = z.infer<typeof getNoticesQuerySchema>["query"];

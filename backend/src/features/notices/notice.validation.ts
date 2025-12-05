@@ -13,22 +13,26 @@ const noticeTypes = [
 ] as const;
 
 const attachmentSchema = z.object({
-    fileName: z.string().min(1, "File name is required"),
-    fileUrl: z.string().url("Invalid file URL"),
+    fileName: z.string("File name is required"),
+    fileUrl: z.string("File URL is required"),
 });
 
 export const createNoticeSchema = z.object({
-    body: z.object({
-        title: z.string().min(1, "Title is required").max(200, "Title cannot exceed 200 characters"),
-        body: z.string().max(5000, "Body cannot exceed 5000 characters").optional(),
-        targetType: z.enum(targetTypes, "Invalid target type"),
-        targetEmployees: z.array(z.string()),
-        noticeType: z.enum(noticeTypes, "Invalid notice type"),
-        publishDate: z.string().or(z.date()),
-        attachments: z.array(attachmentSchema),
-        status: z.enum(["draft", "published"], "Invalid status"),
-        priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
-    }),
+    body: z
+        .object({
+            title: z.string().min(1, "Notice title is required").max(200, "Title must be less than 200 characters"),
+            body: z.string().max(5000, "Body must be less than 5000 characters").optional(),
+            targetType: z.enum(targetTypes, "Target type is required"),
+            targetEmployee: z.string().min(1, "Employee selection is required"),
+            noticeType: z.enum(noticeTypes, "Notice type is required"),
+            publishDate: z.string().min(1, "Publish date is required"),
+            attachments: z.array(attachmentSchema).max(2, "Maximum 2 attachments allowed"),
+            status: z.enum(["draft", "published"]),
+        })
+        .transform(({ targetEmployee, ...rest }) => ({
+            ...rest,
+            targetEmployees: [targetEmployee],
+        })),
 });
 
 export const getNoticeSchema = z.object({
