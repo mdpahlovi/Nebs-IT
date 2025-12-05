@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell } from "lucide-react";
 
 export function AppHeader() {
     return (
@@ -9,6 +10,7 @@ export function AppHeader() {
                 13 June, 2026
             </p>
             <div className="flex items-center gap-4">
+                <Bell className="w-5 h-5" />
                 <div className="bg-border w-px h-5" />
                 <div className="flex items-center gap-3">
                     <p className="text-foreground text-right">

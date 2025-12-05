@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, Eye, MoreVertical, Pencil, Plus } from "lucide-react";
+import { Calendar, Eye, FilePenLine, MoreVertical, Pencil, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/notice-board/")({
     component: RouteComponent,
@@ -130,7 +130,10 @@ function RouteComponent() {
                             Create Notice
                         </Link>
                     </Button>
-                    <Button variant="outline">All Draft Notice</Button>
+                    <Button variant="outline">
+                        <FilePenLine className="w-4 h-4" />
+                        All Draft Notice
+                    </Button>
                 </div>
             </div>
             {/* Filters */}

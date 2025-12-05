@@ -1,21 +1,34 @@
-import * as React from "react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Table as TableIcon } from "lucide-react";
+import {
+    Database,
+    DollarSign,
+    DoorOpen,
+    Files,
+    FileText,
+    History,
+    LayoutDashboard,
+    Megaphone,
+    MessageSquare,
+    Settings,
+    UserCog,
+    Users,
+} from "lucide-react";
+import * as React from "react";
 
 const menuItems = [
-    { title: "Dashboard", url: "/", icon: TableIcon },
-    { title: "Employee", url: "/employee", icon: TableIcon },
-    { title: "Payroll", url: "/payroll", icon: TableIcon },
-    { title: "Pay Slip", url: "/pay-slip", icon: TableIcon },
-    { title: "Attendance", url: "/attendance", icon: TableIcon },
-    { title: "Request Center", url: "/request-center", icon: TableIcon },
-    { title: "Career Database", url: "/career-database", icon: TableIcon },
-    { title: "Document Manager", url: "/document-manager", icon: TableIcon },
-    { title: "Notice Board", url: "/notice-board", icon: TableIcon },
-    { title: "Activity Log", url: "/activity-log", icon: TableIcon },
-    { title: "Exit Interview", url: "/exit-interview", icon: TableIcon },
-    { title: "Profile", url: "/profile", icon: TableIcon },
+    { title: "Dashboard", url: "/", icon: LayoutDashboard },
+    { title: "Employee", url: "/employee", icon: UserCog },
+    { title: "Payroll", url: "/payroll", icon: DollarSign },
+    { title: "Pay Slip", url: "/pay-slip", icon: FileText },
+    { title: "Attendance", url: "/attendance", icon: Users },
+    { title: "Request Center", url: "/request-center", icon: MessageSquare },
+    { title: "Career Database", url: "/career-database", icon: Database },
+    { title: "Document Manager", url: "/document-manager", icon: Files },
+    { title: "Notice Board", url: "/notice-board", icon: Megaphone },
+    { title: "Activity Log", url: "/activity-log", icon: History },
+    { title: "Exit Interview", url: "/exit-interview", icon: DoorOpen },
+    { title: "Profile", url: "/profile", icon: Settings },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

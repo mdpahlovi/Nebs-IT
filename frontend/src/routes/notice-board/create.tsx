@@ -1,24 +1,63 @@
+import { useAppForm } from "@/components/form/form-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { NoticeType, TargetType } from "@/constants/data";
+import { Employee, NoticeType, TargetType } from "@/constants/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Paperclip, Upload, X } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Paperclip, Upload, X } from "lucide-react";
+
+export type TargetType = "individual" | "finance" | "sales-team" | "web-team" | "database-team" | "admin" | "hr" | "all";
+
+export type NoticeType =
+    | "warning-disciplinary"
+    | "performance-improvement"
+    | "appreciation-recognition"
+    | "attendance-leave-issue"
+    | "payroll-compensation"
+    | "contract-role-update"
+    | "advisory-personal-reminder";
+
+export type NoticeStatus = "draft" | "published";
+
+export interface IAttachment {
+    fileName: string;
+    fileUrl: string;
+}
+
+export interface CreateNoticeDto {
+    title: string;
+    body?: string;
+    targetType: TargetType;
+    targetEmployees: string[];
+    noticeType: NoticeType;
+    publishDate: string | Date;
+    attachments: IAttachment[];
+    status: NoticeStatus;
+}
 
 export const Route = createFileRoute("/notice-board/create")({
     component: RouteComponent,
 });
 
 function RouteComponent() {
-    const [uploadedFiles, setUploadedFiles] = useState(["Policy_Document.pdf"]);
-
-    const removeFile = (fileName: string) => {
-        setUploadedFiles(uploadedFiles.filter((f) => f !== fileName));
-    };
+    const form = useAppForm({
+        defaultValues: {
+            title: "",
+            body: "",
+            targetType: "individual",
+            targetEmployee: "",
+            noticeType: "",
+            publishDate: "",
+            attachments: [
+                {
+                    fileName: "",
+                    fileUrl: "",
+                },
+            ],
+        },
+    });
 
     return (
         <div className="bg-muted flex-1 flex flex-col gap-6 p-6">
@@ -38,138 +77,127 @@ function RouteComponent() {
                 <div className="p-6 grid gap-6">
                     <div className="bg-muted rounded p-4">
                         {/* Target Department */}
-                        <div className="space-y-2">
-                            <Label>
-                                <span className="text-red-500">* </span>
-                                Target Department(s) or individual
-                            </Label>
-                            <Select defaultValue="individual">
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(TargetType).map(([key, value]) => (
-                                        <SelectItem key={key} value={key}>
-                                            {value}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <form.AppField
+                            name="targetType"
+                            children={(field) => (
+                                <field.FormSelect
+                                    label="Target Department(s) or individual"
+                                    options={Object.entries(TargetType).map(([value, label]) => ({ value, label }))}
+                                    required
+                                />
+                            )}
+                        />
                     </div>
                     {/* Notice Title */}
-                    <div className="space-y-2">
-                        <Label>
-                            <span className="text-red-500">* </span>
-                            Notice Title
-                        </Label>
-                        <Input placeholder="Write the Title of Notice" />
-                    </div>
+                    <form.AppField
+                        name="title"
+                        children={(field) => <field.FormInput label="Notice Title" placeholder="Write the Title of Notice" required />}
+                    />
                     {/* Employee Details Row */}
                     <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <Label>
-                                <span className="text-red-500">* </span>
-                                Select Employee ID
-                            </Label>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select employee designation" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="emp1">EMP001</SelectItem>
-                                    <SelectItem value="emp2">EMP002</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>
+                        <form.AppField
+                            name="targetEmployee"
+                            children={(field) => (
+                                <field.FormSelect
+                                    label="Select Employee ID"
+                                    options={Object.entries(Employee).map(([value, { id }]) => ({ value, label: id }))}
+                                    placeholder="Select employee designation"
+                                    required
+                                />
+                            )}
+                        />
+                        <div>
+                            <Label className="mb-2">
                                 <span className="text-red-500">* </span>
                                 Employee Name
                             </Label>
-                            <Input placeholder="Enter employee full name" />
+                            <Input
+                                placeholder="Enter employee full name"
+                                value={Employee[form.getFieldValue("targetEmployee") as keyof typeof Employee]?.name ?? ""}
+                                disabled
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <Label>
+                        <div>
+                            <Label className="mb-2">
                                 <span className="text-red-500">* </span>
                                 Position
                             </Label>
-                            <Select>
+                            <Select value={form.getFieldValue("targetEmployee")} disabled>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select employee department" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="dev">Developer</SelectItem>
-                                    <SelectItem value="manager">Manager</SelectItem>
+                                    {Object.entries(Employee).map(([key, { position }]) => (
+                                        <SelectItem value={key}>{position}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
                     {/* Notice Type and Publish Date Row */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>
-                                <span className="text-red-500">* </span>
-                                Notice Type
-                            </Label>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Notice Type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(NoticeType).map(([key, value]) => (
-                                        <SelectItem key={key} value={key}>
-                                            {value}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>
-                                <span className="text-red-500">* </span>
-                                Publish Date
-                            </Label>
-                            <div className="relative">
-                                <Input type="date" placeholder="Select Publishing Date" className="pr-10" />
-                                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                            </div>
-                        </div>
+                        <form.AppField
+                            name="noticeType"
+                            children={(field) => (
+                                <field.FormSelect
+                                    label="Notice Type"
+                                    options={Object.entries(NoticeType).map(([value, label]) => ({ value, label }))}
+                                    placeholder="Select Notice Type"
+                                    required
+                                />
+                            )}
+                        />
+                        <form.AppField
+                            name="noticeType"
+                            children={(field) => (
+                                <field.FormInput type="date" label="Publish Date" placeholder="Select Publishing Date" required />
+                            )}
+                        />
                     </div>
                     {/* Notice Body */}
-                    <div className="space-y-2">
-                        <Label>Notice Body</Label>
-                        <Textarea placeholder="Write the details about notice" className="min-h-[120px] resize-none" />
-                    </div>
+                    <form.AppField
+                        name="body"
+                        children={(field) => <field.FormTextarea label="Notice Body" placeholder="Write the details about notice" />}
+                    />
                     {/* Upload Attachments */}
-                    <div className="space-y-2">
-                        <Label>Upload Attachments (optional)</Label>
-                        <div className="border border-dashed border-emerald-600 rounded-md p-5 cursor-pointer">
-                            <div className="flex flex-col items-center gap-2 text-center">
-                                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                                    <Upload className="w-6 h-6 text-emerald-600" />
+                    <form.AppField
+                        name="attachments"
+                        children={(field) => (
+                            <>
+                                <div>
+                                    <Label className="mb-2">Upload Attachments (optional)</Label>
+                                    <div className="relative border border-dashed border-emerald-600 rounded-md p-5 cursor-pointer">
+                                        <div className="flex flex-col items-center gap-2 text-center">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                                                <Upload className="w-5 h-5 text-emerald-600" />
+                                            </div>
+                                            <p>
+                                                <span className="text-emerald-600">Upload</span>
+                                                <span className="text-foreground"> nominee profile image or drag and drop.</span>
+                                                <br />
+                                                Accepted File Type: jpg, png
+                                            </p>
+                                        </div>
+                                        <input type="file" className="absolute inset-0" hidden />
+                                    </div>
                                 </div>
-                                <p>
-                                    <span className="text-emerald-600">Upload</span>{" "}
-                                    <span className="text-foreground">nominee profile image or drag and drop.</span>
-                                    <br />
-                                    Accepted File Type: jpg, png
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Uploaded Files */}
-                    {uploadedFiles.length
-                        ? uploadedFiles.map((file) => (
-                              <div key={file} className="w-max flex items-center gap-2 px-4 py-2 bg-muted rounded-full">
-                                  <Paperclip className="w-4 h-4 text-muted-foreground" />
-                                  <p>{file}</p>
-                                  <button onClick={() => removeFile(file)} className="p-0.5 bg-background rounded-full text-primary">
-                                      <X className="w-4 h-4" />
-                                  </button>
-                              </div>
-                          ))
-                        : null}
+                                {field.state.value.length
+                                    ? field.state.value.map(({ fileName }, index) => (
+                                          <div key={index} className="w-max flex items-center gap-2 px-4 py-2 bg-muted rounded-full">
+                                              <Paperclip className="w-4 h-4 text-muted-foreground" />
+                                              <p>{fileName}</p>
+                                              <button
+                                                  onClick={() => field.handleChange([])}
+                                                  className="p-0.5 bg-background rounded-full text-primary"
+                                              >
+                                                  <X className="w-4 h-4" />
+                                              </button>
+                                          </div>
+                                      ))
+                                    : null}
+                            </>
+                        )}
+                    />
                 </div>
             </div>
             {/* Footer Actions */}
