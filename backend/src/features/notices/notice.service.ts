@@ -1,7 +1,12 @@
-import { PaginatedResult } from "@/types/index";
 import { ApiError } from "@/utils/ApiError";
+import { MetaResponse } from "@/utils/ApiResponse";
 import { Notice } from "./notice.model";
 import { CreateNoticeDto, INotice, NoticeQueryParams } from "./notice.types";
+
+interface Response {
+    data: INotice[];
+    meta: MetaResponse;
+}
 
 export class NoticeService {
     /**
@@ -17,7 +22,7 @@ export class NoticeService {
     /**
      * Get all notices with filtering and pagination
      */
-    async findAll(query: NoticeQueryParams): Promise<PaginatedResult<INotice>> {
+    async findAll(query: NoticeQueryParams): Promise<Response> {
         const { page = 1, limit = 6, search, targetType, employeeId, status, startDate, endDate } = query;
 
         // Build filter
@@ -51,16 +56,22 @@ export class NoticeService {
 
         const skip = (page - 1) * limit;
 
-        const [notices, total] = await Promise.all([
+        const [notices, total, activeCount, draftCount] = await Promise.all([
             Notice.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
             Notice.countDocuments(filter),
+            Notice.countDocuments({ status: { $in: ["published", "unpublished"] } }),
+            Notice.countDocuments({ status: "draft" }),
         ]);
 
         return {
             data: notices,
-            page,
-            limit,
-            total,
+            meta: {
+                page,
+                limit,
+                total,
+                activeCount,
+                draftCount,
+            },
         };
     }
 

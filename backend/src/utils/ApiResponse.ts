@@ -1,14 +1,17 @@
 import { Response } from "express";
 
+export interface MetaResponse {
+    page: number;
+    limit: number;
+    total: number;
+    [key: string]: unknown;
+}
+
 export interface IApiResponse<T = unknown> {
     success: boolean;
     message: string;
     data?: T;
-    meta?: {
-        page?: number;
-        limit?: number;
-        total?: number;
-    };
+    meta?: MetaResponse;
 }
 
 export class ApiResponse {
@@ -24,23 +27,12 @@ export class ApiResponse {
         return this.success(res, data, message, 201);
     }
 
-    static paginated<T>(
-        res: Response,
-        data: T[],
-        page: number,
-        limit: number,
-        total: number,
-        message = "Success"
-    ): Response<IApiResponse<T[]>> {
+    static paginated<T>(res: Response, data: T[], meta: MetaResponse, message = "Success"): Response<IApiResponse<T[]>> {
         return res.status(200).json({
             success: true,
             message,
             data,
-            meta: {
-                page,
-                limit,
-                total,
-            },
+            meta,
         });
     }
 }

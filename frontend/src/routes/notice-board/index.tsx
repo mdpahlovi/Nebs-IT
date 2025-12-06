@@ -1,13 +1,12 @@
+import ToggleStatus from "@/components/toggle-status";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 import { PaginationComp } from "@/components/ui/pagination";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Employee, NoticeType, TargetType, TargetTypeColor } from "@/constants/data";
 import { fetchNotices } from "@/lib/apis";
@@ -41,7 +40,7 @@ function RouteComponent() {
     const [open, setOpen] = useState(false);
     const [filters, setFilters] = useState<NoticeFilters>(initialFilters);
 
-    const { data } = useQuery({
+    const { data, refetch } = useQuery({
         queryKey: ["notices", page, filters.targetType, filters.employeeId, filters.status, filters.dateRange?.from, filters.dateRange?.to],
         queryFn: () =>
             fetchNotices({
@@ -95,9 +94,9 @@ function RouteComponent() {
                 <div className="space-y-2">
                     <h3>Notice Management</h3>
                     <div className="flex items-center gap-2">
-                        <h6 className="text-[#00A46E]">Active Notices: 8</h6>
+                        <h6 className="text-[#00A46E]">Active Notices: {String(data?.meta?.activeCount || 0).padStart(2, "0")}</h6>
                         <div className="bg-border w-px h-2" />
-                        <h6 className="text-[#FFA307]">Draft Notice: 04</h6>
+                        <h6 className="text-[#FFA307]">Draft Notice: {String(data?.meta?.draftCount || 0).padStart(2, "0")}</h6>
                     </div>
                 </div>
                 {/* Action Buttons */}
@@ -221,21 +220,7 @@ function RouteComponent() {
                                         <Pencil className="w-4 h-4 text-muted-foreground" />
                                     </button>
                                     {notice.status !== "draft" ? (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <button className="p-1 hover:bg-accent/5 rounded-full">
-                                                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                                                </button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                side="bottom"
-                                                align="end"
-                                                className="w-48 flex justify-between items-center p-4"
-                                            >
-                                                <Label htmlFor="status">{capitalize(notice.status)}</Label>
-                                                <Switch id="status" />
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <ToggleStatus id={notice._id} status={notice.status} refetch={refetch} />
                                     ) : (
                                         <button className="p-1 hover:bg-accent/5 rounded-full">
                                             <MoreVertical className="w-4 h-4 text-muted-foreground" />
@@ -246,7 +231,16 @@ function RouteComponent() {
                         ))}
                     </TableBody>
                 </Table>
-            ) : null}
+            ) : (
+                <div className="border divide-y rounded-lg overflow-hidden">
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                </div>
+            )}
             {/* Pagination */}
             <PaginationComp page={page} total={data?.meta?.total} limit={data?.meta?.limit} onChange={setPage} />
         </div>

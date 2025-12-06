@@ -4,7 +4,7 @@ const baseUrl = import.meta.env.VITE_SERVER_URL;
 
 export type PaginatedResult<T> = {
     data: T[];
-    meta: { page: number; limit: number; total: number };
+    meta: { page: number; limit: number; total: number; activeCount: number; draftCount: number };
 };
 
 export const createNotice = async (data: CreateNotice) => {
@@ -39,6 +39,23 @@ export const fetchNotices = async (query: Record<string, unknown>): Promise<Pagi
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to fetch notices");
+    }
+
+    return response.json();
+};
+
+export const updateNoticeStatus = async (id: string) => {
+    const response = await fetch(`${baseUrl}/api/v1/notices/${id}/toggle-status`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update notice status");
     }
 
     return response.json();

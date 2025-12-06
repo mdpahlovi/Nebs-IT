@@ -1,6 +1,6 @@
 import { errorHandler, notFoundHandler } from "@/middleware/error.middleware";
 import cors from "cors";
-import express, { Application, Request, Response } from "express";
+import express, { Application } from "express";
 import helmet from "helmet";
 import { config } from "./config";
 import { apiRoutes } from "./routes";
@@ -25,7 +25,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Handle favicon requests
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
 
 // API Routes
 app.use("/api/v1", apiRoutes);

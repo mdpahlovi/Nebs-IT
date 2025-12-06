@@ -22,7 +22,7 @@ export class NoticeController {
         const query = req.query as unknown as NoticeQueryParams;
         const result = await noticeService.findAll(query);
 
-        ApiResponse.paginated(res, result.data, result.page, result.limit, result.total, "Notices retrieved successfully");
+        ApiResponse.paginated(res, result.data, result.meta, "Notices retrieved successfully");
     });
 
     /**

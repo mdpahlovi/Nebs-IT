@@ -9,7 +9,7 @@ const RootLayout = () => (
     <>
         <SidebarProvider>
             <AppSidebar />
-            <div className="flex-1">
+            <div className="flex-1 overflow-hidden">
                 <AppHeader />
                 <Outlet />
             </div>
